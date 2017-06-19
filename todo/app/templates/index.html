@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+    <form class="input-group" method="post" action="{{ url_for('main.add_todo')}}">
+        {{ form.body() }}
+
+    <span class="input-group-btn">
+        <button class="btn btn-primary" type="submit">Add</button>
+    </span>
+    </form>
+    {% for todo in todos %}
+        <p>{{ todo.body }}</p>
+    {% endfor %}
+{% endblock %}
