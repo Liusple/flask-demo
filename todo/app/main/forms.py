@@ -4,5 +4,5 @@ from wtforms.validators import DataRequired
 
 
 class TodoForm(FlaskForm):
-    body = StringField('Something to do', validators=[DataRequired(message="Input something")])
-    submit = StringField('Add')
+    body = StringField('Todo', validators=[DataRequired(message="Input something")])
+    submit = SubmitField('Add')

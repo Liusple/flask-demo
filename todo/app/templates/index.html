@@ -1,13 +1,47 @@
-{% extends 'base.html' %}
-{% block content %}
-    <form class="input-group" method="post" action="{{ url_for('main.add_todo')}}">
-        {{ form.body() }}
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-    <span class="input-group-btn">
-        <button class="btn btn-primary" type="submit">Add</button>
-    </span>
+{% block page_content %}
+    {# {{ wtf.quick_form(form) }}  #}
+    <form method="post" action="{{ url_for("main.index") }}">
+        {{ form.hidden_tag() }}
+        {{ wtf.form_field(form.body) }}
+        {{ wtf.form_field(form.submit) }}
     </form>
-    {% for todo in todos %}
-        <p>{{ todo.body }}</p>
-    {% endfor %}
+
+
+    <div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>content</th>
+                <th>time</th>
+                <th>operation</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for todo in todos %}
+                {% if todo.done %}
+                    <tr class="info">
+                        <td>{{ todo.body }}</td>
+                        <td>{{ todo.timestamp | format_time }}</td>
+                        <td>
+                            <a href="{{ url_for('main.delete', id=todo.id) }}">Delete</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr class="danger">
+                        <td>{{ todo.body }}</td>
+                        <td>{{ todo.timestamp | format_time }}</td>
+                        <td>
+                            <a href="{{ url_for("main.done", id=todo.id) }}">Done</a>
+                            <a href="{{ url_for("main.delete", id=todo.id) }}">Delete</a>
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 {% endblock %}
