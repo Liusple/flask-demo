@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="dataSourceStorageLocal">
-    <data-source name="SQLite-Todo" uuid="95a05453-a303-437d-8feb-0de3732a80ee">
-      <secret-storage>master_key</secret-storage>
-    </data-source>
-  </component>
-</project>

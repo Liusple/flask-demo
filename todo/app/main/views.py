@@ -2,7 +2,7 @@ from . import main
 from ..models import Todo
 from .forms import TodoForm
 from .. import db
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash
 
 @main.route('/', methods=["POST", "GET"])
 def index():

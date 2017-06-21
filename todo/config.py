@@ -8,11 +8,13 @@ class BaseConfig():
     def init_app(self):
         pass
 
-
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'dev.sqlite')
 
+
+class TestConfig(BaseConfig):
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'test.sqlite')
 
 config = {
     'development': DevelopmentConfig,
