@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dropzone</title>
+    <link rel="stylesheet" href="{{ url_for("static", filename="dropzone.css") }}">
+</head>
+<body>
+<form method="post" action="{{ url_for("upload") }}" enctype="multipart/form-data" class="dropzone">
+    <script src="{{ url_for("static", filename="dropzone.js") }}"></script>
+</form>
+</body>
+</html>

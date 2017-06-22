@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Third Demo</title>
+</head>
+<body>
+<h1>Upload</h1>
+<a href="{{ url_for('manager') }}">Manager</a>
+<hr>
+<form method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    {{ form.photo(multiple="multiple") }}
+    {% for error in form.photo.errors %}
+        <span style="color:red;">{{ error }}</span>
+    {% endfor %}
+    {{ form.submit() }}
+</form>
+{% if success %}
+    <p>Upload Success.</p>
+{% endif %}
+</body>
+</html>
