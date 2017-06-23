@@ -1,0 +1,80 @@
+<html lang="zh-CN">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1024">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Photo Wall</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="impress-not-supported">
+
+<div class="fallback-message">
+    <p>The image wall is being generated, please wait... If the page didn't change after one minute, there must be
+        something wrong about your browser, you better try this browser: <b>Chrome</b>, <b>Safari</b> or <b>Firefox</b>.
+    </p>
+</div>
+
+<div id="blue-loader"></div>
+<div id="mask-bg"></div>
+
+<a class="button overview-btn" href="#overview">全景</a>
+<a class="button about-btn" href="#about">关于</a>
+<a class="button close-btn" href="{{ url_for('index') }}">
+    <img src="{{ url_for('static', filename='images/close.png') }}" width="30" height="30">
+</a>
+<input class="button" id="full-screen" type="image" src="{{ url_for('static', filename='images/fullscreen.png') }}"
+       width="25" onclick="toggleFullScreen()">
+<input id="up" type="image" src="{{ url_for('static', filename='images/up.png') }}" width="30" height="30">
+<input id="down" type="image" src="{{ url_for('static', filename='images/down.png') }}" width="30" height="30">
+
+<div id="impress">
+    <div id="image-container">
+        {% block page_content %}{% endblock %}
+        <div class="step" id="about" data-x="{{ overview[0] }}" data-y="{{ overview[1] }}" data-z="20000"
+             data-rotate-x="90"
+             data-rotate-z="180">
+            <div class="center-text">
+                <p class="big-text">About</p>
+                <hr>
+                <div class="small-text">
+                    <p>「这是我的个人项目翻相册（<a href="http://fanxiangce.com" target="_blank">fanxiangce.com</a>）的组成部分，
+                        一个使用<a href="https://github.com/impress/impress.js" target="_blank">impress.js</a>
+                        生成图片墙的程序。详情见<a href="https://zhuanlan.zhihu.com/p/24504456" target="_blank">这里</a>。欢迎<a href="https://github.com/greyli/image-wall" target="_blank">Fork！</a>」</p>
+                    <br>
+                </div>
+                <br>
+                <a class="button back-bt" href="#overview">Back</a>
+                <a class="shake shake-hard button donate-bt" href="#more">More</a>
+            </div>
+        </div>
+        
+        <div class="step" id="more" data-x="{{ overview[0] }}" data-y="{{ overview[1] }}" data-z="20000"
+             data-rotate-y="90">
+            <div class="center-text">
+                <p class="center-text big-text">More</p>
+                <hr>
+                <p class="center-text small-text">
+                    <a href="http://fanxiangce.com" target="_blank">翻相册</a> |
+                    <a href="http://greyli.com/projects" target="_blank">我的其他小项目</a> |
+                    <a href="http://greyli.com" target="_blank">Blog</a> |
+                    <a href="http://github.com/greyli" target="_blank">Github</a> |
+                    <a href="mailto:withlihui@gmail.com">Email</a> |
+                    <a href="http://zhuanlan.zhihu.com/flask" target="_blank">知乎专栏</a>
+                </p>
+                <br>
+                <a class="button back-bt" href="#about">Back</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/impress.js') }}"></script>
+<script src="{{ url_for('static', filename='js/imagesloaded.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>impress().init();</script>
+
+</body>
+</html>
