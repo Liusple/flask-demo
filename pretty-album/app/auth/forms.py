@@ -1,6 +1,6 @@
 # coding: utf-8
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField
+from wtforms import SubmitField, StringField, BooleanField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 from wtforms import ValidationError
 from ..models import User
@@ -9,6 +9,7 @@ from ..models import User
 class LoginForm(FlaskForm):
     username = StringField(u"用户名", validators=[DataRequired(message=u"请输入用户名")])
     password = StringField(u"密码", validators=[DataRequired(message=u"请输入密码")])
+    remember = BooleanField(u"记住我")
     submit = SubmitField(u"登录")
 
 
