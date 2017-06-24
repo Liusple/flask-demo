@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pretty Photo Album</title>
+</head>
+<body>
+<h1>{{ username }}</h1>
+<form method="POST" action="{{ url_for("auth.login") }}">
+    {{ form.hidden_tag() }}
+    {{ form.username() }}
+    {{ form.submit() }}
+</form>
+</body>
+</html>
