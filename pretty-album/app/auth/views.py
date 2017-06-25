@@ -4,7 +4,8 @@ from .forms import LoginForm, RegisterForm
 from flask import render_template, redirect, url_for, request, flash
 from .. import db
 from ..models import User
-from flask_login import login_user
+from flask_login import login_user, current_user, login_required
+from ..email import send_email
 
 
 @auth.route("/login", methods=["POST", "GET"])
@@ -30,6 +31,26 @@ def register():
                     password=form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash(u"注册成功，可以登录了", "success")
+        token = user.generate_confirm()
+        send_email(user.email, u"新用户请认证", "email/confirm", user=user, token=token)
+        flash(u"邮箱，请认证", "info")
         return redirect(url_for("auth.login"))
     return render_template("auth/register.html", form=form)
+
+
+@auth.route("/confirm/<token>")
+@login_required
+def confirm(token):
+    if current_user.confirm(token):
+        print("asdf success")
+    else:
+        print("asdf failed")
+    return render_template("test.html")
+
+
+
+
+
+
+
+
