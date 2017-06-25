@@ -4,7 +4,7 @@ from .forms import LoginForm, RegisterForm
 from flask import render_template, redirect, url_for, request, flash
 from .. import db
 from ..models import User
-from flask_login import login_user, current_user, login_required
+from flask_login import login_user, current_user, login_required, logout_user
 from ..email import send_email
 
 
@@ -22,6 +22,12 @@ def login():
             flash(u"用户名或者密码错误，请重新登录", "danger")
     return render_template("auth/login.html", form=form)
 
+@auth.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash(u"你已注销", "info")
+    return redirect(url_for("main.index"))
 
 @auth.route("/register", methods=["POST", "GET"])
 def register():
