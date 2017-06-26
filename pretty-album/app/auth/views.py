@@ -1,6 +1,6 @@
 # coding: utf-8
 from . import auth
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, ChangePasswordForm
 from flask import render_template, redirect, url_for, request, flash
 from .. import db
 from ..models import User
@@ -22,12 +22,14 @@ def login():
             flash(u"用户名或者密码错误，请重新登录", "danger")
     return render_template("auth/login.html", form=form)
 
+
 @auth.route("/logout")
 @login_required
 def logout():
     logout_user()
     flash(u"你已注销", "info")
     return redirect(url_for("main.index"))
+
 
 @auth.route("/register", methods=["POST", "GET"])
 def register():
@@ -88,4 +90,18 @@ def resend_confirmation():
     return redirect(url_for("main.index"))
 
 
+@auth.route("/change-password", methods=["POST", "GET"])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if current_user.verify_password(form.password.data):
+            current_user.password = form.password1.data
+            db.session.add(current_user)
+            db.session.commit()
+            flash(u"密码修改成功", "success")
+            return redirect(url_for("main.index"))
+        else:
+            flash(u"原密码无效", "danger")
+    return render_template("auth/change_password.html", form=form)
 

@@ -13,4 +13,4 @@ def index():
 @main.route("/secret")
 @login_required
 def secret():
-    return render_template("index.html")
+    return render_template("test.html")
