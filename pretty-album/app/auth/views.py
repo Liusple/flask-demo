@@ -95,6 +95,7 @@ def resend_confirmation():
 def change_password():
     form = ChangePasswordForm()
     if form.validate_on_submit():
+        #验证旧密码是否正确放在这里处理
         if current_user.verify_password(form.password.data):
             current_user.password = form.password1.data
             db.session.add(current_user)
