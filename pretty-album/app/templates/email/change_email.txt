@@ -1,8 +1,7 @@
-点击下面的链接重置你的密码：
-{{ url_for('auth.reset_password', token=token, _external=True) }}
-
+亲爱的 {{ user.username }}
+点击下面的链接重置你的邮箱：
+{{ url_for('auth.change_email', token=token, _external=True) }}
 如果你的email程序不支持链接点击，请将上面的地址拷贝至你的浏览器的地址栏进入Pretty Album。
 感谢你对Pretty Album的支持，祝你在Pretty Album获得愉快的体验。
 
 这是一封自动生成的email，请勿回复。
-

@@ -1,0 +1,16 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<p>亲爱的 {{ user.username }},</p>
+<p>点击下面的链接重置你的邮箱： <br>
+    <a href="{{ url_for('auth.change_email', token=token, _external=True) }}">
+        {{ url_for('auth.change_email', token=token, _external=True) }}
+    </a>
+</p>
+<p>如果你的email程序不支持链接点击，请将上面的地址拷贝至你的浏览器的地址栏进入Pretty Album。</p>
+<p>感谢你对Pretty Album的支持，祝你在Pretty Album获得愉快的体验。</p>
+<p>
+    <small>(这是一封自动生成的email，请勿回复。)</small>
+</p>
+</html>

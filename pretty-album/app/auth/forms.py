@@ -15,7 +15,7 @@ class LoginForm(FlaskForm):
 
 class RegisterForm(FlaskForm):
     username = StringField(u"用户名", validators=[DataRequired(message=u"请输入用户名"), Length(1, 64)])
-    email = StringField(u"邮箱", validators=[Email(), DataRequired(message=u"请输入邮箱"), Length(1, 64)])
+    email = StringField(u"邮箱", validators=[Email(u"邮箱格式不正确"), DataRequired(message=u"请输入邮箱"), Length(1, 64)])
     password = PasswordField(u"密码", validators=[DataRequired(message=u"请输入密码")])
     password2 = PasswordField(u"确认密码", validators=[DataRequired(message=u"请输入密码"),
                                                  EqualTo("password", message=u"两次密码不一致")])
@@ -39,13 +39,22 @@ class ChangePasswordForm(FlaskForm):
 
 
 class ForgetPasswordForm(FlaskForm):
-    email = StringField(u"邮箱", validators=[DataRequired(message=u"请输入邮箱"), Email()])
+    email = StringField(u"邮箱", validators=[DataRequired(message=u"请输入邮箱"), Email(u"邮箱格式不正确")])
     submit = SubmitField(u"提交")
 
 
 class ResetPasswordForm(FlaskForm):
-    email = StringField(u"邮箱", validators=[DataRequired(message=u"请输入邮箱"), Email()])
+    email = StringField(u"邮箱", validators=[DataRequired(message=u"请输入邮箱"), Email(u"邮箱格式不正确")])
     password = PasswordField(u"新密码", validators=[DataRequired(message=u"输入新密码")])
     password1 = PasswordField(u"确认新密码", validators=[DataRequired(message=u"确认新密码"),
                                                     EqualTo("password", message=u"两次密码输的不一致")])
     submit = SubmitField(u"提交")
+
+class ChangeEmailForm(FlaskForm):
+    email = StringField(u"新的邮箱", validators=[DataRequired(u"请输入邮箱"), Email(u"邮箱格式不正确")])
+    password = PasswordField(u"密码", validators=[DataRequired(u"请输入密码")])
+    submit = SubmitField(u"提交")
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first():
+            raise ValidationError(u"邮箱已经被注册")

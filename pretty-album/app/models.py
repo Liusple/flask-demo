@@ -65,6 +65,31 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return "<User %s>" % self.name
 
+    def generate_email_token(self, email, expiration=3600):
+        s = Serializer(current_app.config["SECRET_KEY"], expiration)
+        #not s.dumps({}, {})
+        return s.dumps({"change_email":self.id, "new_email":email})
+
+    def verify_email(self, token):
+        s = Serializer(current_app.config["SECRET_KEY"])
+        try:
+            data = s.loads(token)
+        except:
+            return False
+        if data.get("change_email") == self.id:
+            #判断get有无
+            new_email = data.get("new_email")
+            if new_email is None:
+                return False
+            #self.query
+            if self.query.filter_by(email=new_email).first():
+                return False
+            self.email = new_email
+            db.session.add(self)
+            db.session.commit()
+            return True
+        else:
+            return False
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):

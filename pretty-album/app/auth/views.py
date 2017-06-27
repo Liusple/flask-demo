@@ -1,6 +1,6 @@
 # coding: utf-8
 from . import auth
-from .forms import LoginForm, RegisterForm, ChangePasswordForm, ForgetPasswordForm, ResetPasswordForm
+from .forms import LoginForm, RegisterForm, ChangePasswordForm, ForgetPasswordForm, ResetPasswordForm, ChangeEmailForm
 from flask import render_template, redirect, url_for, request, flash
 from .. import db
 from ..models import User
@@ -142,3 +142,30 @@ def reset_password(token):
             flash(u"验证失败，请重新验证")
             return redirect(url_for("main.index"))
     return render_template("auth/reset_password.html", form=form)
+
+
+@auth.route("/change-email", methods=["POST", "GET"])
+@login_required
+def change_email_request():
+    form = ChangeEmailForm()
+    if form.validate_on_submit():
+        if current_user.verify_password(form.password.data):
+            new_email = form.email.data
+            token = current_user.generate_email_token(new_email)
+            send_email(new_email, u"修改邮箱", "email/change_email", user=current_user, token=token)
+            flash(u"有一封邮件发到了新的邮箱，请验证", "info")
+            return redirect(url_for("main.index"))
+        else:
+            flash(u"密码错误", "danger")
+    #一直漏写form
+    return render_template("auth/change_email.html", form=form)
+
+
+@auth.route("/change-email/<token>")
+@login_required
+def change_email(token):
+    if current_user.verify_email(token):
+        flash(u"邮箱重置成功", "success")
+    else:
+        flash(u"邮箱重置失败", "danger")
+    return redirect(url_for("main.index"))
