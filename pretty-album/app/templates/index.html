@@ -3,5 +3,5 @@
 
 {% block page_content %}
     <h1>Forever young</h1>
-    <h2>Hello {{ current_user.username }}</h2>
+    <h2>Hello {% if current_user.username %} {{ current_user.username }} {% else %} Stranger{% endif %}</h2>
 {% endblock %}

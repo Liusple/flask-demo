@@ -12,6 +12,7 @@
     {{ wtf.quick_form(form) }}
     <br>
     {# <p>忘记密码？点击<a href="{{ url_for('auth.password_reset_request') }}">这里</a>找回。</p> #}
-    <p>新用户？点击<a href="{{ url_for('auth.register') }}">这里</a>注册。</p>
+    <p>新用户？点击<a href="{{ url_for("auth.register") }}">这里</a>注册。</p>
+    <p>忘记密码？点击<a href="{{ url_for("auth.forget_password") }}">这里</a>重置密码 </p>
 </div>
 {% endblock %}

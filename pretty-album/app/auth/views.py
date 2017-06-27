@@ -1,6 +1,6 @@
 # coding: utf-8
 from . import auth
-from .forms import LoginForm, RegisterForm, ChangePasswordForm
+from .forms import LoginForm, RegisterForm, ChangePasswordForm, ForgetPasswordForm, ResetPasswordForm
 from flask import render_template, redirect, url_for, request, flash
 from .. import db
 from ..models import User
@@ -44,6 +44,7 @@ def register():
         db.session.commit()
         token = user.generate_confirm_token()
         send_email(user.email, u"新用户请认证", "email/confirm", user=user, token=token)
+        flash(user.email, "info")
         flash(u"邮箱，请认证", "info")
         return redirect(url_for("auth.login"))
     return render_template("auth/register.html", form=form)
@@ -106,3 +107,38 @@ def change_password():
             flash(u"原密码无效", "danger")
     return render_template("auth/change_password.html", form=form)
 
+
+@auth.route("/forget-password", methods=["POST", "GET"])
+def forget_password():
+    form = ForgetPasswordForm()
+    if not current_user.is_anonymous:##
+        return redirect(url_for("main.index"))
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is not None:
+            token = user.generate_reset_token()##
+            send_email(form.email.data, u"忘记密码", "email/forget-password", token=token)
+            flash(u"请登录邮箱，点击链接重置密码", "info")
+        else:
+            flash(u"输入的邮箱无效", "danger")
+        return redirect(url_for("main.index"))
+    return render_template("auth/forget_password.html", form=form)
+
+
+@auth.route("/reset-password/<token>", methods=["POST", "GET"])
+def reset_password(token):
+    if not current_user.is_anonymous:
+        return redirect(url_for("main.index"))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is None:
+            flash(u"email无效", "danger")
+            return redirect(url_for("main.index"))
+        elif user.verify_reset(token, form.password.data):#
+            flash(u"密码已经重置了", "success")
+            return redirect(url_for("auth.login"))
+        else:
+            flash(u"验证失败，请重新验证")
+            return redirect(url_for("main.index"))
+    return render_template("auth/reset_password.html", form=form)

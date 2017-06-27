@@ -37,3 +37,15 @@ class ChangePasswordForm(FlaskForm):
                                                     EqualTo("password1", message=u"两次密码输的不一致")])
     submit = SubmitField(u"提交")
 
+
+class ForgetPasswordForm(FlaskForm):
+    email = StringField(u"邮箱", validators=[DataRequired(message=u"请输入邮箱"), Email()])
+    submit = SubmitField(u"提交")
+
+
+class ResetPasswordForm(FlaskForm):
+    email = StringField(u"邮箱", validators=[DataRequired(message=u"请输入邮箱"), Email()])
+    password = PasswordField(u"新密码", validators=[DataRequired(message=u"输入新密码")])
+    password1 = PasswordField(u"确认新密码", validators=[DataRequired(message=u"确认新密码"),
+                                                    EqualTo("password", message=u"两次密码输的不一致")])
+    submit = SubmitField(u"提交")

@@ -44,9 +44,27 @@ class User(UserMixin, db.Model):
         db.session.commit()
         return True
 
+    def generate_reset_token(self, expiration=3600):
+        s = Serializer(current_app.config["SECRET_KEY"], expiration)
+        return s.dumps({"reset": self.id})
+
+    def verify_reset(self, token, new_password):
+        s = Serializer(current_app.config["SECRET_KEY"])
+        try:
+            data = s.loads(token)
+        except:
+            return False
+        if data.get("reset") != self.id:
+            return False
+        #用self.password修改密码
+        self.password = new_password
+        db.session.add(self)
+        db.session.commit()
+        return True
 
     def __repr__(self):
         return "<User %s>" % self.name
+
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
