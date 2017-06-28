@@ -13,6 +13,7 @@ class BaseConfig:
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_SENDER = os.environ.get("MAIL_SENDER")
+    ALBUM_ADMIN = "18158135171@qq.com"
 
     @staticmethod
     def init_app(app):

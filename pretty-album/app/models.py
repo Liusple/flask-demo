@@ -7,6 +7,15 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 
 
+
+class Permission:
+    FOLLOW = 0x01
+    COMMENT = 0x02
+    CREATE_ALBUMS = 0x04
+    MODERATE_COMMENTS = 0x08
+    ADMIN = 0x80
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer(), primary_key=True)
@@ -14,6 +23,16 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
+    area = db.Column(db.String(64))
+
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)##
+        if self.role is None:
+            if self.email == current_app.config["ALBUM_ADMIN"]:
+                self.role = Role.query.filter_by(permissions=0xff).first()
+            if self.role is None:
+                self.role = Role.query.filter_by(default=True).first()
 
     @property
     def password(self):
@@ -62,9 +81,6 @@ class User(UserMixin, db.Model):
         db.session.commit()
         return True
 
-    def __repr__(self):
-        return "<User %s>" % self.name
-
     def generate_email_token(self, email, expiration=3600):
         s = Serializer(current_app.config["SECRET_KEY"], expiration)
         #not s.dumps({}, {})
@@ -90,6 +106,49 @@ class User(UserMixin, db.Model):
             return True
         else:
             return False
+
+    def can(self, permissions):
+        return self.role is not None and (self.role.permissions & permissions) == permissions
+
+    def is_admin(self):
+        return self.can(Permission.ADMIN)  #
+
+    def __repr__(self):
+        return "<User %s>" % self.name
+
+
+class Role(db.Model):
+    __tablename__ = "roles"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    default = db.Column(db.Boolean, default=False)
+    permissions = db.Column(db.Integer)
+    users = db.relationship("User", backref="role", lazy="dynamic")#not dynamic="lazy"
+
+    @staticmethod
+    def create_roles():
+        roles = {
+            "Admin":(0xff, False),
+            "User":(Permission.COMMENT |
+                    Permission.FOLLOW |
+                    Permission.CREATE_ALBUMS, True),
+            "Moderator":(Permission.COMMENT |
+                         Permission.FOLLOW |
+                         Permission.MODERATE_COMMENTS |
+                         Permission.CREATE_ALBUMS, False)
+        }
+        for k in roles:
+            role = Role.query.filter_by(name=k).first()
+            if role is None:
+                role = Role(name=k)
+            role.permissions = roles[k][0]
+            role.default = roles[k][1]
+            db.session.add(role)
+        db.session.commit()
+
+    def __repr__(self):
+        return "<Role %s>" % self.name
+
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
