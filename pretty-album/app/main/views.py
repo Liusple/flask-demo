@@ -3,10 +3,11 @@
 from flask import render_template, flash, redirect, request, abort, url_for
 from . import main
 from flask_login import login_required
-from .forms import EditProfileForm
+from .forms import EditProfileForm, EditProfileAdminForm
 from ..models import User, Role
 from flask_login import current_user
 from .. import db
+from ..decorators import admin_required, permission_required
 
 @main.route("/")
 def index():
@@ -43,4 +44,32 @@ def edit_profile():
     form.location.data = current_user.location
     form.about_me.data = current_user.about_me
     form.status.data = current_user.status
+    return render_template("edit_profile.html", form=form)
+
+
+@main.route("/edit-profile/<int:id>", methods=["POST", "GET"])
+@admin_required
+def edit_profile_admin(id):
+    user = User.query.get_or_404(id)###
+    if user is None:
+        abort(403)
+    form = EditProfileAdminForm(user=user)##need user=user
+    if form.validate_on_submit():
+        user.email = form.email.data
+        user.location = form.location.data
+        user.about_me = form.about_me.data
+        user.status = form.status.data
+        user.confirmed = form.confirmed.data
+        user.role = Role.query.get(form.role.data)###
+        #必要漏了db
+        flash(u"用户资料更新成功", "success")
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for("main.user", username=user.username))
+    form.about_me.data = user.about_me
+    form.location.data = user.location
+    form.email.data = user.email
+    form.status.data = user.status
+    form.confirmed.data = user.confirmed
+    form.role.data = user.role_id###
     return render_template("edit_profile.html", form=form)
