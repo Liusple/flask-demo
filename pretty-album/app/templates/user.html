@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 
+
 {% block page_content %}
-    {% if current_user.is_admin() %}
-        <a href="{{ url_for("main.edit_profile_admin", id=2) }}">编辑[admin]</a>
-    {% endif %}
-    <p>{{ user.username }}</p>
-    <p>{{ user.status }}</p>
+<div class="page-header">
+    <h1>{{ user.username }}</h1>
+    {% if user.location %}
     <p>{{ user.location }}</p>
+    {% endif %}
+    {% if current_user.is_admin() %}
+        <a href="{{ url_for("main.edit_profile_admin", id=user.id) }}">编辑[admin]</a>
+    {% endif %}
+    <p>{{ user.status }}</p>
     <p>{{ user.about_me }}</p>
     <p>{{ user.email }}</p>
+</div>
 {% endblock %}

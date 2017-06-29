@@ -25,10 +25,12 @@ class User(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
     location = db.Column(db.String(64))
-    about_me = db.Column(db.Text())
+    about_me = db.Column(db.Text)
     member_since = db.Column(db.DateTime, default=datetime.now)
     last_seen = db.Column(db.DateTime, default=datetime.now)
     status = db.Column(db.String(64))
+    albums = db.relationship("Album", backref="author", lazy="dynamic")
+    comments = db.relationship("Comment", backref="author", lazy="dynamic")
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)##
@@ -158,6 +160,44 @@ class Role(db.Model):
     def __repr__(self):
         return "<Role %s>" % self.name
 
+class Photo(db.Model):
+    __tablename__ = "photos"
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.String(64))
+    url_s = db.Column(db.String(64))
+    url_t = db.Column(db.String(64))
+    about = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.now, index=True)
+    order = db.Column(db.Integer)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))##users.id
+    album_id = db.Column(db.Integer, db.ForeignKey("albums.id"))
+    comments = db.relationship("Comment", backref="photo", lazy="dynamic")
+
+
+class Album(db.Model):
+    __tablename__ = "albums"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(64))
+    about = db.Column(db.Text)
+    cover = db.Column(db.String(64))
+    type = db.Column(db.Integer, default=0)
+    tag = db.Column(db.String(64))
+    no_public = db.Column(db.Boolean, default=True)
+    no_comment = db.Column(db.Boolean, default=True)
+    asc_order = db.Column(db.Boolean, default=True)
+    timestamp = db.Column(db.DateTime, default=datetime.now, index=True)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    photos = db.relationship("Photo", backref="album", lazy="dynamic")
+
+
+class Comment(db.Model):
+    __tablename__ = "comments"
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.now)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    photo_id = db.Column(db.Integer, db.ForeignKey("photos.id"))
+    disabled = db.Column(db.Boolean)
 #
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):

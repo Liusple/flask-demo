@@ -73,3 +73,4 @@ def edit_profile_admin(id):
     form.confirmed.data = user.confirmed
     form.role.data = user.role_id###
     return render_template("edit_profile.html", form=form)
+
