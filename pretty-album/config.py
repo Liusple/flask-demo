@@ -14,6 +14,7 @@ class BaseConfig:
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_SENDER = os.environ.get("MAIL_SENDER")
     ALBUM_ADMIN = "18158135171@qq.com"
+    UPLOADED_PHOTOS_DEST = os.getcwd() + '/app/static/img/'
 
     @staticmethod
     def init_app(app):

@@ -31,7 +31,8 @@ class User(UserMixin, db.Model):
     status = db.Column(db.String(64))
     albums = db.relationship("Album", backref="author", lazy="dynamic")
     comments = db.relationship("Comment", backref="author", lazy="dynamic")
-
+    messages = db.relationship('Message', backref='user', lazy='dynamic', foreign_keys='[Message.user_id]')#
+    message_from = db.relationship('Message', backref='author', lazy='dynamic', foreign_keys='[Message.author_id]')#
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)##
         if self.role is None:
@@ -198,6 +199,16 @@ class Comment(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     photo_id = db.Column(db.Integer, db.ForeignKey("photos.id"))
     disabled = db.Column(db.Boolean)
+
+
+class Message(db.Model):
+    __tablename__ = "messages"
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.now)
+    disable = db.Column(db.Boolean)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 #
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):

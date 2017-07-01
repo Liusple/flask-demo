@@ -2,9 +2,10 @@
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, Length, Email, ValidationError
 from wtforms import StringField, TextAreaField, BooleanField, SubmitField, SelectField
+from flask_wtf.file import FileField, FileRequired, FileAllowed
 from ..models import User, Role
 from .. import db
-
+from .. import photos
 
 class EditProfileForm(FlaskForm):
     location = StringField(u"位置", validators=[Length(0, 64)])
@@ -30,4 +31,17 @@ class EditProfileAdminForm(FlaskForm):
         if self.user.email != field.data and User.query.filter_by(email=field.data).first():##
             raise ValidationError(u"邮箱已经被注册")
 
+class NewAlbumForm(FlaskForm):
+    title = StringField(u"标题")
+    about = TextAreaField(u"介绍")
+    photo = FileField(u"图片", validators=[FileAllowed(photos, u"只能上传图片"), FileRequired(u"你还没有选择图片")])
+    asc_order = SelectField(u"显示顺序", choices=[("True",u"按上传时间正序排列"), ("False",u"按上传时间倒序排列")])
+    no_public = BooleanField(u"私密相册")
+    no_comment = BooleanField(u"禁止评论")
+    submit = SubmitField(u"提交")
+
+
+class CommentForm(FlaskForm):
+    body = TextAreaField(u"评论")
+    submit = SubmitField(u"提交")
 
