@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}{{ album.title }}Pretty album{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block page_content %}
+    <ol class="breadcrumb">
+        <li><a href=""></a> </li>
+    </ol>
+
+    <div class="page-header">
+        <h3>{{ album.title }}</h3>
+        <p>{{ album.about }}</p>
+        <p>{{ album.photos.count() }}张图片</p>
+        <span class="pull-right"> &nbsp;
+            {% if not no_pic %}
+                <a class="" href=""></a>
+            {% endif %}
+            {% if current_user == album.author %}
+                <a class="btn" href="{{ url_for("") }}"></a>
+                <a class="btn" href="{{  }}"></a>
+                <a class="btn" href="{{  }}"></a>
+
+
+            {% endif %}
+        </span>
+    </div>
+        <h3>
+            {% if no_pic == True %}
+                还没有图片，点击创建
+            {% endif %}
+        </h3>
+    <div>
+        {% for photo in photos %}
+            <div class="image grid-item">
+                {% if loop.index != 1 %}
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
