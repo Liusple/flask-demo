@@ -8,8 +8,11 @@ from ..models import User, Role, Album, Photo, Comment, Message
 from flask_login import current_user
 from .. import db
 from ..decorators import admin_required, permission_required
+import hashlib
+import time
+from .. import photos
 
-@main.route("/")
+@main.route("/", methods=["GET", "POST"])
 def index():
     flash(request.endpoint, "info")
     return render_template("index.html")
@@ -20,6 +23,27 @@ def index():
 def secret():
     return render_template("test.html")
 
+@main.route("/about")
+def about():
+    return render_template("about.html")
+
+@main.route('/return-files', methods=['GET'])
+def return_file():
+    return send_from_directory(directory='static', filename='styles.css', as_attachment=True)
+
+
+@main.route("/explore", methods=[])
+def explore():
+    photos = Photo.query.order_by(Photo.timestamp.desc()).all()
+    photos = [photo for photo in photos if photo.album.no_public == False]
+    photo_type = "new"
+    return render_template("explore.html", photos=photos, type=photo_type)
+
+
+@main.route("/explore/hot", methods=["GET", "POST"])
+def explore_hot():
+    photos = Photo.query.all()
+    
 
 @main.route("/user/<username>")
 @login_required
@@ -76,14 +100,48 @@ def edit_profile_admin(id):
     return render_template("edit_profile.html", form=form)
 
 
+# add different suffix for image
+img_suffix = {
+    300: '_t',  # thumbnail
+    800: '_s'  # show
+}
+
+
+def image_resize(image, base_width):
+    #: create thumbnail
+    filename, ext = os.path.splitext(image)
+    img = Image.open(photos.path(image))
+    if img.size[0] <= base_width:
+        return photos.url(image)
+    w_percent = (base_width / float(img.size[0]))
+    h_size = int((float(img.size[1]) * float(w_percent)))
+    img = img.resize((base_width, h_size), PIL.Image.ANTIALIAS)
+    img.save(os.path.join(current_app.config['UPLOADED_PHOTOS_DEST'], filename + img_suffix[base_width] + ext))
+    return url_for('.uploaded_file', filename=filename + img_suffix[base_width] + ext)
+
+
+def save_image(files):
+    photo_amount = len(files)
+    if photo_amount > 10:
+        return redirect(url_for("main.new_album"))
+    images = []
+    for img in images:
+        filename = hashlib.md5(current_user.username + str(time.time())).hexdigest()[0:10]
+        image = photos.save(img, name=filename + ".")
+        file_url = photos.url(image)
+        url_s = image_resize(image, 800)
+        url_t = images_resize(image, 300
+        images.append((file_url, url_s, url_t))
+    return images
+
 @main.route("/new-album", methods=["POST", "GET"])
 @login_required
 def new_album():
     form = NewAlbumForm()
     if form.validate_on_submit():
-        #images = []
-       # if request.method == "POST" and "photo" in request.files:
-            #images = save_image(request.files.getlist("photo"))
+        images = []
+        if request.method == "POST" and "photo" in request.files:
+            images = save_image(request.files.getlist("photo"))
         title = form.title.data
         about = form.about.data
         author = current_user._get_current_object()##
@@ -92,13 +150,12 @@ def new_album():
         album = Album(author=author, title=title, about=about, no_public=no_public, no_comment=no_comment)
         db.session.add(album)
 
-        #for url in images:
-           # photo = Photo(url=url[0], url_s=url[1], url_t=url[2], album=album, author=current_user._get_current_object())
-            #db.session.add(photo)
+        for url in images:
+            photo = Photo(url=url[0], url_s=url[1], url_t=url[2], album=album, author=current_user._get_current_object())
+            db.session.add(photo)
         db.session.commit()
-       # return redirect(url_for("main.edit_photo", id=album.id))
         flash(u"相册创建成功", "success")
-        return redirect(url_for("main.index"))
+        return redirect(url_for("main.edit_photo", id=album.id))
     return render_template("new_album.html", form=form)
 
 
@@ -127,6 +184,7 @@ def albums(username):
                            user=user, albums=albums, album_count=album_count,
                            photo_count=photo_count, pagination=pagination)
 
+
 @main.route("/album/<int:id>")
 def album(id):
     album = Album.query.get_or_404(id)
@@ -152,3 +210,58 @@ def album(id):
         no_pic = False
 
     return render_template("album.html", album=album, photos=photos, pagination=pagination, no_pic=no_pic)
+
+@main.route("/add-photo/<int:id>", methods=["POST", "GET"])
+def add_photo(id):
+    album = Album.query.get_or_404(id)
+    form = AddPhotoForm()
+    if form.validate_on_submit:
+        if request.method == "POST" and "photo" in request.files:
+            images = save_image(request.files.getlist("photo"))
+
+            for url in images:
+                photo = Photo(url=url[0], album=album, autuor=current_user._get_current_object())
+                db.session.add(photo)
+            db.session.commit()
+            flash(u"图片添加成功", "success")
+            return redirect(url_for("main.album", id=album.id))
+        return render_template("add_photo.html", form=form, album=album)##
+
+@main.route("/upload", methods=["GET", "POST"])
+@login_required
+def upload():
+    return render_template("upload.html")##
+
+
+@main.route("upload-add", methods=["POST", "GET"])
+def upload_add():
+    id = request.form.get("album")
+    return redirect(url_for("main.add_photo", id=id))##
+
+@main.route("/delete/album/<int:id>")
+def delete_album(id):
+    album = Album.query.filter_by(id=id).first()
+    if album is None:
+        flash(u"无效操作", "success")
+        return redirect(url_for("main.index", username=current_user.username))
+    if current_user.username != album.author.username:
+        abort(403)
+    db.session.delete(album)
+    db.session.commit()
+    flash(u"相册删除成功", "success")
+    return redirect(url_for("main.albums", username=album.author.username))
+
+
+@main.route("/delete/photo/<int:id>")
+def delete_photo(id):
+    photo = Photo.query.filter_by(id=id).first()
+    album = photo.album
+    if photo is None:
+        flash(u"无效操作", "success")
+        return redirect(url_for("main.index", username=current_user.username))
+    if current_user.username != photo.author.username:
+        abort(403)
+    db.session.delete(photo)
+    db.session.commit()
+    flash(u"删除成功", "success")
+    return redirect(url_for("main.album", id=album.id))##
