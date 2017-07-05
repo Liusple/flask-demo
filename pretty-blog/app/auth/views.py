@@ -14,7 +14,7 @@ def login():
         if user is not None and user.password == form.password.data:
             login_user(user)
             flash("Login success")
-            return redirect(request.args.get("next") or url_for("main.index"))
+            return redirect(request.args.get("next") or url_for("main.index"))###
         else:
             flash("Login failed")
     return render_template("auth/login.html", form=form)

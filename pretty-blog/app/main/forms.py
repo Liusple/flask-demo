@@ -10,5 +10,10 @@ class EditProfileForm(FlaskForm):
 
 
 class PostForm(FlaskForm):
-    body = TextAreaField("Post")
+    body = TextAreaField("Post", validators=[DataRequired(message="Need Post")])
+    submit = SubmitField("Submit")
+
+
+class CommentForm(FlaskForm):
+    body = TextAreaField("Comment", validators=[DataRequired(message="Need Comment")])
     submit = SubmitField("Submit")
