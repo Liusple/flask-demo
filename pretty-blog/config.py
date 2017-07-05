@@ -4,7 +4,7 @@ import os
 basedir = os.getcwd()
 
 class BaseConfig():
-    SECRET_KEY = True
+    SECRET_KEY = "forever young"
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 class DevelopmentConfig(BaseConfig):
