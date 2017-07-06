@@ -44,7 +44,10 @@ def user(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
         abort(404)
-    return render_template("user.html", user=user)
+    page = request.args.get("page", 1, type=int)
+    pagination = user.posts.order_by(Post.timestamp.desc()).paginate()
+    posts = pagination.items
+    return render_template("user.html", user=user, posts=posts, pagination=pagination)
 
 
 @main.route("/post/<int:id>", methods=["POST", "GET"])
@@ -61,6 +64,7 @@ def post(id):
     pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(page, per_page=20, error_out=False)              ##
     comments = pagination.items
     return render_template("post.html", posts=[post], comments=comments, pagination=pagination, form=form)
+
 
 @main.route("/edit-post/<int:id>", methods=["POST", "GET"])
 def edit_post(id):
