@@ -8,14 +8,18 @@
                 <div class="post-body">
                     {{ post.body }}
                 </div>
-            </div>
-            <div class="post-footer">
-                {% if current_user == post.author %}
-                    <a href="{{ url_for("main.edit_post", id=post.id) }}"><span class="label label-primary">Edit</span></a>
-                {% endif %}
-                <a href="{{ url_for("main.post", id=post.id) }}"><span class="label label-danger">Permalink</span></a>
-                <a href="{{ url_for("main.post", id=post.id) }}#comments"><span class="label label-primary">{{ post.comments.count() }}Comments</span></a>
+
+                <div class="post-footer">
+                    {% if current_user == post.author %}
+                        <a href="{{ url_for("main.edit_post", id=post.id) }}"><span class="label label-primary">Edit</span></a>
+                    {% elif current_user.is_admin() %}
+                        <a href="{{ url_for("main.edit_post", id=post.id) }}"><span class="label label-danger">Edit [Admin]</span></a>
+                    {% endif %}
+                    <a href="{{ url_for("main.post", id=post.id) }}"><span class="label label-default">Permalink</span></a>
+                    <a href="{{ url_for("main.post", id=post.id) }}#comments"><span class="label label-primary">{{ post.comments.count() }}Comments</span></a>
+                </div>
             </div>
         </li>
+        <br/>
     {% endfor %}
 </ul>

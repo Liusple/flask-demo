@@ -40,6 +40,7 @@ class Role(db.Model):
         db.session.commit()
 
 
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -50,6 +51,16 @@ class User(UserMixin, db.Model):
     posts = db.relationship("Post", backref="author", lazy="dynamic")
     comments = db.relationship("Comment", backref="author", lazy="dynamic")
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
+
+
+    #care
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        if self.role is None:
+            if self.username == "meixi":
+                self.role = Role.query.filter_by(name="Admin").first()##
+            if self.role is None:
+                self.role = Role.query.filter_by(default=True).first()
 
     @property
     def password(self):
@@ -62,6 +73,37 @@ class User(UserMixin, db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    def can(self, permissions):
+        return self.role is not None and (self.role.permissions & permissions) == permissions
+
+    def is_admin(self):
+        return self.can(Permission.ADMIN)
+
+    @staticmethod
+    def generate_fake(count=100):
+        from sqlalchemy.exc import IntegrityError
+        from random import seed
+        import forgery_py
+
+        seed()
+        for i in range(count):
+            u = User(username=forgery_py.internet.user_name(True),
+                     location=forgery_py.address.city(),
+                     about_me=forgery_py.lorem_ipsum.sentence(),
+                     password=forgery_py.lorem_ipsum.word())
+            db.session.add(u)
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()      ##
+
+class AnonymousUser(AnonymousUserMixin):
+    def can(self, permissions):
+        return False
+    def is_admin(self):
+        return False
+
+login_manager.anonymous_user = AnonymousUser
 
 class Post(db.Model):
     __tablename__ = "posts"
@@ -70,6 +112,21 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.now)
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     comments = db.relationship("Comment", backref="post", lazy="dynamic")
+
+    @staticmethod
+    def generate_fake(count=100):
+        from random import seed, randint
+        import forgery_py
+
+        seed()
+        user_count = User.query.count()##
+        for i in range(count):
+            u = User.query.offset(randint(0, user_count-1)).first()
+            p = Post(body=forgery_py.lorem_ipsum.sentences(randint(1, 3)),
+                     timestamp=forgery_py.date.date(True),
+                     author=u)
+            db.session.add(p)
+            db.session.commit()
 
 class Comment(db.Model):
     __tablename__ = "comments"

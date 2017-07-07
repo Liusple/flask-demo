@@ -1,17 +1,19 @@
 # coding=utf-8
 
 from . import main
-from .forms import EditProfileForm, PostForm, CommentForm
+from .forms import EditProfileForm, PostForm, CommentForm, EditProfileAdminForm
 from flask import redirect, url_for,render_template, flash, abort, request
 from flask_login import current_user, login_required
 from .. import db
-from ..models import User, Post, Comment
+from ..models import User, Post, Comment, Permission, Role
+from ..decorators import permission_required, admin_required
+
 
 @main.route("/", methods=["POST", "GET"])
 def index():
     form = PostForm()
     #permission
-    if form.validate_on_submit():
+    if current_user.can(Permission.WRITE) and form.validate_on_submit():
         post = Post(author=current_user._get_current_object(), body=form.body.data)
         db.session.add(post)
         db.session.commit()
@@ -38,6 +40,27 @@ def edit_profile():
     form.about_me.data = current_user.about_me
     return render_template("edit_profile.html", form=form)
 
+@main.route("/edit-profile/<int:id>", methods=["POST", "GET"])
+@login_required
+@admin_required
+def admin_edit_profile(id):
+    user = User.query.get_or_404(id)
+    form = EditProfileAdminForm(user=user) ##not user
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.location = form.location.data
+        user.about_me = form.about_me.data
+        user.role = Role.query.get(form.role.data)#####
+        db.session.add(user)
+        db.session.commit()
+        flash("Profile update success")
+        return redirect(url_for("main.user", username=user.username))#username=
+    form.username.data = user.username
+    form.location.data = user.location
+    form.about_me.data = user.about_me
+    form.role.data = user.role_id
+    return render_template("edit_profile.html", form=form)
+
 
 @main.route("/<username>")
 def user(username):
@@ -54,6 +77,7 @@ def user(username):
 def post(id):
     post = Post.query.get_or_404(id)    #
     form = CommentForm()
+    #在html控制评论是否可以评论
     if form.validate_on_submit():
         comment = Comment(body=form.body.data, author=current_user._get_current_object(), post=post)
         db.session.add(comment)
