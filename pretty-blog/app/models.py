@@ -40,6 +40,12 @@ class Role(db.Model):
         db.session.commit()
 
 
+class Follow(db.Model):
+    __tablename__ = "follows"
+    follower_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.now)
+
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -51,7 +57,33 @@ class User(UserMixin, db.Model):
     posts = db.relationship("Post", backref="author", lazy="dynamic")
     comments = db.relationship("Comment", backref="author", lazy="dynamic")
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
+    followed = db.relationship("Follow", foreign_keys=[Follow.follower_id],
+                                backref=db.backref("follower", lazy="joined"),
+                                lazy="dynamic",
+                                cascade="all, delete-orphan")
+    followers = db.relationship("Follow", foreign_keys=[Follow.followed_id],
+                                backref=db.backref("followed", lazy="joined"),
+                                lazy="dynamic",
+                                cascade="all, delete-orphan")
 
+    def is_following(self, user):
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+        #not self.followed.query.filter_by...
+
+    def followed_by(self, user):
+        return self.followers.filter_by(follower_id=user.id).first() is not None
+
+    def follow(self, user):
+        if not self.is_following(user):
+            follow = Follow(follower=self, followed=user)
+            db.session.add(follow)
+            db.session.commit()
+
+    def unfollow(self, user):
+        f = self.followed.filter_by(followed_id=user.id).first()###########
+        if f:
+            db.session.delete(f)
+            db.session.commit()
 
     #care
     def __init__(self, **kwargs):

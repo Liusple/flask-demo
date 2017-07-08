@@ -40,6 +40,7 @@ def edit_profile():
     form.about_me.data = current_user.about_me
     return render_template("edit_profile.html", form=form)
 
+
 @main.route("/edit-profile/<int:id>", methods=["POST", "GET"])
 @login_required
 @admin_required
@@ -68,7 +69,7 @@ def user(username):
     if user is None:
         abort(404)
     page = request.args.get("page", 1, type=int)
-    pagination = user.posts.order_by(Post.timestamp.desc()).paginate()
+    pagination = user.posts.order_by(Post.timestamp.desc()).paginate(page, per_page=20, error_out=False)
     posts = pagination.items
     return render_template("user.html", user=user, posts=posts, pagination=pagination)
 
@@ -104,7 +105,41 @@ def edit_post(id):
     return render_template("edit_post.html", form=form)
 
 
+@main.route("/follow/<username>")
+@login_required
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        abort(403)
+    current_user.follow(user)
+    flash("Follow success")
+    return redirect(url_for("main.user", username=username))
+
+@main.route("/unfollow/<username>")
+@login_required
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        abort(403)
+    current_user.unfollow(user)
+    flash("Unfollow success")
+    return redirect(url_for("main.user", username=username))
 
 
+@main.route("/followers/<username>")
+def followers(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        abort(403)
+    follows = [item.follower for item in user.followers]
+    return render_template("follows.html", follows=follows, user=user, title="Followers")
 
+
+@main.route("/followed/<username>")
+def followed(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        abort(403)
+    follows = [item.followed for item in user.followed]
+    return render_template("follows.html", follows=follows, user=user, title="Following")
 

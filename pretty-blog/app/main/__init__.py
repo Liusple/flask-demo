@@ -9,4 +9,4 @@ main = Blueprint("main", __name__)
 def inject_permissions():
     return dict(Permission=Permission)
 
-from . import views, forms
+from . import views, forms, errors
