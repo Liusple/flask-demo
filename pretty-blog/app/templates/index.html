@@ -6,17 +6,20 @@
     <div class="page-header">
         <h2>Hello, {% if current_user.is_authenticated %}{{current_user.username}}{% else %}Stranger{% endif %}</h2>
     </div>
-    <div class="col-md-6">
+    <div>
         {% if current_user.can(Permission.WRITE) %}
             {{ wtf.quick_form(form) }}
         {% endif %}
+        <br/>
     </div>
-
+    <!--###-->
     <div class="post-tabs">
         <ul class="nav nav-tabs">
-            <li></li>
+            <li{% if not show_followed %} class="active" {% endif %}><a href="{{ url_for("main.show_all") }}">ALL</a></li>
+            {% if current_user.is_authenticated %}
+                <li {% if show_followed %} class="active" {% endif %}><a href="{{ url_for("main.show_followed") }}">Followed</a></li>
+            {% endif %}
         </ul>
-        <hr/>
         {% include "_posts.html" %}
     </div>
 

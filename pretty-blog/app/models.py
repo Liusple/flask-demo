@@ -129,6 +129,11 @@ class User(UserMixin, db.Model):
             except:
                 db.session.rollback()      ##
 
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.followed_id==Post.author_id).filter(Follow.follower_id==self.id)
+        #return db.session.query(Post).select_from(Follow).filter_by(follower_id=self.id).join(Post, Follow.followed_id == Post.author_id)
+
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return False
