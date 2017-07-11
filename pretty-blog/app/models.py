@@ -172,7 +172,7 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
     timestamp = db.Column(db.DateTime, default=datetime.now)
-
+    disabled = db.Column(db.Boolean, default=False)
 
 @login_manager.user_loader
 def load_user(id):
