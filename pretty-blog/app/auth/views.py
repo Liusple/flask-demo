@@ -12,6 +12,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is not None and user.verify_password(form.password.data):
+            #remember
             login_user(user)
             flash("Login success")
             return redirect(request.args.get("next") or url_for("main.index"))###
@@ -27,11 +28,12 @@ def logout():
     flash("Logout success")
     return redirect(url_for("main.index"))
 
+
 @auth.route("/register", methods=["POST", "GET"])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, password=form.password.data)
+        user = User(username=form.username.data, password=form.password1.data)
         db.session.add(user)
         db.session.commit()
         flash("Register success")

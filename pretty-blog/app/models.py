@@ -35,8 +35,11 @@ class Role(db.Model):
         for r in roles:
             role = Role.query.filter_by(name=r).first()
             if role is None:
-                role = Role(name=r, permissions=roles[r][0], default=roles[r][1])
-                db.session.add(role)
+                #role = Role(name=r, permissions=roles[r][0], default=roles[r][1])
+                role = Role(name=r)
+            role.permissions = roles[r][0]
+            role.default = roles[r][1]
+            db.session.add(role)
         db.session.commit()
 
 
@@ -50,10 +53,10 @@ class Follow(db.Model):
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True)
-    password_hash = db.Column(db.String(64))
+    username = db.Column(db.String(64), unique=True, index=True)
+    password_hash = db.Column(db.String(128))
     location = db.Column(db.String(64))
-    about_me = db.Column(db.Text)
+    about_me = db.Column(db.Text())##db.Text()
     posts = db.relationship("Post", backref="author", lazy="dynamic")
     comments = db.relationship("Comment", backref="author", lazy="dynamic")
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
@@ -96,7 +99,7 @@ class User(UserMixin, db.Model):
 
     @property
     def password(self):
-        raise AttributeError("Password can not be seen")
+        raise AttributeError("Password can not be seen")##
 
     @password.setter
     def password(self, password):

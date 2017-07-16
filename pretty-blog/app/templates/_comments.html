@@ -9,7 +9,7 @@
             <div class="comment-content">
                 <div class="comment-body">
                     {% if comment.disabled %}
-                        <p></p>
+                        <p>Comment disabled</p>
                     {% endif %}
                     {% if moderate or not comment.disabled %}
                         {{ comment.body }}
