@@ -1,15 +1,17 @@
 <ul class="comments">
     {% for comment in comments %}
-        <div class="comment-thumbnail">
-            <a href="{{ url_for('.user', username=comment.author.username) }}">
-               {{ comment.author.username }}
-            </a>
-        </div>
-        <li class="comments">
+        <li class="comment">
+            <!--头像-->
+            <div class="comment-thumbnail">
+                <a href="{{ url_for('.user', username=comment.author.username) }}">
+                    {{ comment.author.username }}
+                </a>
+            </div>
             <div class="comment-content">
+                <!--评论时间和作者-->
                 <div class="comment-body">
                     {% if comment.disabled %}
-                        <p>Comment disabled</p>
+                        <p><i>Comment disabled</i></p>
                     {% endif %}
                     {% if moderate or not comment.disabled %}
                         {{ comment.body }}
@@ -18,13 +20,14 @@
                 {% if moderate %}
                     <br>
                     {% if comment.disabled %}
-                    <a class="btn btn-default btn-xs" href="{{ url_for('.moderate_enable', id=comment.id, page=page) }}">Enable</a>
+                        <a class="btn btn-default btn-xs"
+                           href="{{ url_for('.moderate_enable', id=comment.id, page=page) }}">Enable</a>
                     {% else %}
-                    <a class="btn btn-danger btn-xs" href="{{ url_for('.moderate_disable', id=comment.id, page=page) }}">Disable</a>
+                        <a class="btn btn-danger btn-xs"
+                           href="{{ url_for('.moderate_disable', id=comment.id, page=page) }}">Disable</a>
                     {% endif %}
                 {% endif %}
             </div>
         </li>
-        <br/>
     {% endfor %}
 </ul>

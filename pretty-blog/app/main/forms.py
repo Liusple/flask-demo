@@ -5,16 +5,16 @@ from wtforms.validators import DataRequired, Length, Email, ValidationError
 from ..models import User, Role
 
 class EditProfileForm(FlaskForm):
-    location = StringField("Location", validators=[Length(1, 64)])
+    location = StringField("Location", validators=[Length(0, 64)])
     about_me = TextAreaField("About me")
     submit = SubmitField("Submit")
 
 
 class EditProfileAdminForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired(message="Username")])
-    location = StringField("Location")
+    username = StringField("Username", validators=[DataRequired(message="Username"), Length(1, 64)])
+    location = StringField("Location", validators=[Length(0, 64)])
     about_me = TextAreaField("About me")
-    role = SelectField("Role", coerce=int)
+    role = SelectField("Role", coerce=int)###
     submit = SubmitField("Submit")
 
     def __init__(self, user, *args, **kwargs):

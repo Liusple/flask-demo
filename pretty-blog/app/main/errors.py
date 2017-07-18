@@ -13,3 +13,4 @@ def forbidden(e):
 @main.app_errorhandler(500)
 def server_error(e):
     return render_template("500.html"), 500
+

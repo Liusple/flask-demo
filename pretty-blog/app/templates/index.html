@@ -2,6 +2,8 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% import "_macros.html" as macros %}
 
+{% block title %}Album{% endblock %}
+
 {% block page_content %}
     <div class="page-header">
         <h2>Hello, {% if current_user.is_authenticated %}{{current_user.username}}{% else %}Stranger{% endif %}</h2>
@@ -10,7 +12,6 @@
         {% if current_user.can(Permission.WRITE) %}
             {{ wtf.quick_form(form) }}
         {% endif %}
-        <br/>
     </div>
     <!--###-->
     <div class="post-tabs">

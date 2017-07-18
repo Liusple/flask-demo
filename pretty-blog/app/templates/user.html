@@ -6,33 +6,38 @@
 
         <div class="profile-header">
             <h1>{{ user.username }}</h1>
-            <p>{% if user.location %}{{ user.location }}{% endif %}</p>
-            <p>{% if user.about_me %}{{ user.about_me }}{% endif %}</p>
-            <p>{{ user.posts.count() }} blog posts. {{ user.comments.count() }} comments.</p>
-            {% if current_user.can(Permission.FOLLOW) and user != current_user %}
-                {% if not current_user.is_following(user) %}
-                    <a href="{{ url_for("main.follow", username=user.username) }}" class="btn btn-primary">Follow</a>
-                {% else %}
-                    <a href="{{ url_for("main.unfollow", username=user.username) }}" class="btn btn-primary">Unfollow</a>
-                {% endif %}
-            {% endif %}
-            <a href="{{ url_for("main.followers", username=user.username) }}"> <!--have username=user.username-->
-                Followers:<span class="badge">{{ user.followers.count() }}</span>
-            </a>
-            <a href="{{ url_for("main.followed", username=user.username) }}">
-            <a href="{{ url_for("main.followed", username=user.username) }}">
-                Following:<span class="badge">{{ user.followed.count() }}</span>
-            </a>
-        </div>
-        <p>
-            {% if current_user.is_admin() %}
-                <a class="btn btn-danger" href="{{ url_for("main.admin_edit_profile", id=user.id) }}">Admin Edit</a>   <!--应该放一个链接，是user.id-->
-            {% endif %}
-            {% if user == current_user %}<!--care-->
-                <a class="btn btn-default" href="{{ url_for("main.edit_profile") }}">Edit Profile</a>
-            {% endif %}
-        </p>
 
+            <p>{% if user.location %}{{ user.location }}{% endif %}</p>
+
+            <p>{% if user.about_me %}{{ user.about_me }}{% endif %}</p>
+
+            <p>{{ user.posts.count() }} blog posts. {{ user.comments.count() }} comments.</p>
+
+            <p>
+                {% if current_user.can(Permission.FOLLOW) and user != current_user %}
+                    {% if not current_user.is_following(user) %}
+                        <a href="{{ url_for("main.follow", username=user.username) }}" class="btn btn-primary">Follow</a>
+                    {% else %}
+                        <a href="{{ url_for("main.unfollow", username=user.username) }}" class="btn btn-primary">Unfollow</a>
+                    {% endif %}
+                {% endif %}
+                <a href="{{ url_for("main.followers", username=user.username) }}"> <!--have username=user.username-->
+                    Followers:<span class="badge">{{ user.followers.count() }}</span>
+                </a>
+                <a href="{{ url_for("main.followed", username=user.username) }}">
+                    Following:<span class="badge">{{ user.followed.count() }}</span>
+                </a>
+            </p>
+            <p>
+                {% if current_user.is_admin() %}
+                    <a class="btn btn-danger" href="{{ url_for("main.admin_edit_profile", id=user.id) }}">Admin Edit</a>
+                    <!--应该放一个链接，是user.id-->
+                {% endif %}
+                {% if user == current_user %}<!--care-->
+                    <a class="btn btn-default" href="{{ url_for("main.edit_profile") }}">Edit Profile</a>
+                {% endif %}
+            </p>
+        </div>
     </div>
     <h3>Post by {{ user.username }}</h3>
     {% include "_posts.html" %}

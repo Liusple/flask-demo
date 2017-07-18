@@ -74,6 +74,7 @@ class User(UserMixin, db.Model):
         #not self.followed.query.filter_by...
 
     def followed_by(self, user):
+        #self.follower.filter_by(followed_id)
         return self.followers.filter_by(follower_id=user.id).first() is not None
 
     def follow(self, user):
@@ -83,6 +84,7 @@ class User(UserMixin, db.Model):
             db.session.commit()
 
     def unfollow(self, user):
+        ###
         f = self.followed.filter_by(followed_id=user.id).first()###########
         if f:
             db.session.delete(f)
@@ -131,7 +133,7 @@ class User(UserMixin, db.Model):
                 db.session.commit()
             except:
                 db.session.rollback()      ##
-
+    ####
     @property
     def followed_posts(self):
         return Post.query.join(Follow, Follow.followed_id==Post.author_id).filter(Follow.follower_id==self.id)
@@ -149,7 +151,7 @@ class Post(db.Model):
     __tablename__ = "posts"
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.now)
+    timestamp = db.Column(db.DateTime, default=datetime.now, index=True)
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     comments = db.relationship("Comment", backref="post", lazy="dynamic")
 

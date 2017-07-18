@@ -5,6 +5,7 @@
                 <div class="post-author">
                     <a href="{{ url_for("main.user", username=post.author.username) }}">{{ post.author.username}}</a>
                 </div>
+
                 <div class="post-body">
                     {{ post.body }}
                 </div>
@@ -16,10 +17,10 @@
                         <a href="{{ url_for("main.edit_post", id=post.id) }}"><span class="label label-danger">Edit [Admin]</span></a>
                     {% endif %}
                     <a href="{{ url_for("main.post", id=post.id) }}"><span class="label label-default">Permalink</span></a>
+                    <!--#comments-->
                     <a href="{{ url_for("main.post", id=post.id) }}#comments"><span class="label label-primary">{{ post.comments.count() }}Comments</span></a>
                 </div>
             </div>
         </li>
-        <br/>
     {% endfor %}
 </ul>
