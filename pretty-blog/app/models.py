@@ -3,7 +3,8 @@ from . import db, login_manager
 from flask_login import UserMixin, AnonymousUserMixin
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash        ###
-
+from flask import request
+import hashlib
 
 class Permission:
     FOLLOW = 0x01  #没有逗号
@@ -42,12 +43,11 @@ class Role(db.Model):
             db.session.add(role)
         db.session.commit()
 
-
 class Follow(db.Model):
     __tablename__ = "follows"
     follower_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
     followed_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.now)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class User(UserMixin, db.Model):
@@ -56,10 +56,13 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     location = db.Column(db.String(64))
+    email = db.Column(db.String(64))
+    image_hash = db.Column(db.String(64))
     about_me = db.Column(db.Text())##db.Text()
     posts = db.relationship("Post", backref="author", lazy="dynamic")
     comments = db.relationship("Comment", backref="author", lazy="dynamic")
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
+    bugs = db.relationship("Bug", backref="author", lazy="dynamic")
     followed = db.relationship("Follow", foreign_keys=[Follow.follower_id],
                                 backref=db.backref("follower", lazy="joined"),
                                 lazy="dynamic",
@@ -98,6 +101,8 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(name="Admin").first()##
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
+        if self.email is not None and self.image_hash is None:###
+            self.image_hash = hashlib.md5(self.email.encode("utf-8")).hexdigest()
 
     @property
     def password(self):
@@ -115,6 +120,14 @@ class User(UserMixin, db.Model):
 
     def is_admin(self):
         return self.can(Permission.ADMIN)
+
+    def image(self, size=100, default="identicon", rating="g"):
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avatar'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        hash = self.image_hash or hashlib.md5(self.email.encode("utf-8")).hexdigest()
+        return "{url}/{hash}?s={size}&d={default}&r={rating}".format(url=url, hash=hash, size=size, default=default, rating=rating)###
 
     @staticmethod
     def generate_fake(count=100):
@@ -139,6 +152,21 @@ class User(UserMixin, db.Model):
         return Post.query.join(Follow, Follow.followed_id==Post.author_id).filter(Follow.follower_id==self.id)
         #return db.session.query(Post).select_from(Follow).filter_by(follower_id=self.id).join(Post, Follow.followed_id == Post.author_id)
 
+    @staticmethod
+    def create_email_and_image_hash():
+        import forgery_py
+        from random import seed
+        seed()
+        users = User.query.all()
+        for u in users:
+            #if u.email is None:
+            u.email = forgery_py.internet.email_address()
+            #if u.image_hash is None:
+            u.image_hash = hashlib.md5(u.email.encode("utf-8")).hexdigest()
+            db.session.add(u)
+        db.session.commit()
+
+
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return False
@@ -151,7 +179,7 @@ class Post(db.Model):
     __tablename__ = "posts"
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.now, index=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     comments = db.relationship("Comment", backref="post", lazy="dynamic")
 
@@ -176,8 +204,15 @@ class Comment(db.Model):
     body = db.Column(db.Text)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
-    timestamp = db.Column(db.DateTime, default=datetime.now)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     disabled = db.Column(db.Boolean, default=False)
+
+class Bug(db.Model):
+    __tablename__ = "bugs"
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
 @login_manager.user_loader
 def load_user(id):

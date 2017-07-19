@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<ul>
+    {% for b in bugs %}
+    <li>{{ b.body }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

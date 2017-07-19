@@ -37,3 +37,7 @@ class PostForm(FlaskForm):
 class CommentForm(FlaskForm):
     body = TextAreaField("Enter your comment", validators=[DataRequired(message="Need Comment")])
     submit = SubmitField("Submit")
+
+class BugForm(FlaskForm):
+    body = TextAreaField("Report bug", validators=[DataRequired(message="Need Bug")])
+    submit = SubmitField("Report bug")

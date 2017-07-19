@@ -1,11 +1,11 @@
 # coding=utf-8
 
 from . import main
-from .forms import EditProfileForm, PostForm, CommentForm, EditProfileAdminForm
+from .forms import EditProfileForm, PostForm, CommentForm, EditProfileAdminForm, BugForm
 from flask import redirect, url_for,render_template, flash, abort, request, make_response
 from flask_login import current_user, login_required
 from .. import db
-from ..models import User, Post, Comment, Permission, Role
+from ..models import User, Post, Comment, Permission, Role, Bug
 from ..decorators import permission_required, admin_required
 
 
@@ -88,6 +88,7 @@ def post(id):
     form = CommentForm()
     #在html控制评论是否可以评论
     if form.validate_on_submit():
+        ##current_user._get_current_object()
         comment = Comment(body=form.body.data, author=current_user._get_current_object(), post=post)
         db.session.add(comment)
         db.session.commit()
@@ -103,7 +104,10 @@ def post(id):
 @main.route("/edit-post/<int:id>", methods=["POST", "GET"])
 @login_required
 def edit_post(id):
+    #需要在这边控制谁可以修改post，因为可以输入url
     post = Post.query.get_or_404(id)
+    if current_user != post.author and not current_user.can(Permission.ADMIN):
+        abort(403)
     form = PostForm()
     if form.validate_on_submit():
         post.body = form.body.data
@@ -163,6 +167,7 @@ def followed(username):
         flash("Invalid user")
         return redirect(url_for("main.index"))
     page = request.args.get("page", 1, type=int)
+    #user.followed
     pagination = user.followed.paginate(page, per_page=20, error_out=False)
     follows = [item.followed for item in pagination.items]
     return render_template("follows.html", pagination=pagination, endpoint="main.followed", follows=follows, user=user, title="Following")
@@ -211,3 +216,27 @@ def moderate_disable(id):
     db.session.add(comment)
     db.session.commit()
     return redirect(url_for("main.moderate", page=request.args.get("page", 1, type=int)))
+
+@main.route("/report-bug", methods=["POST", "GET"])
+def report_bug():
+    form = BugForm()
+    if form.validate_on_submit():
+        bug = Bug(body=form.body.data)
+        if current_user.is_authenticated:
+            bug.author = current_user._get_current_object()
+        else:
+            bug.author = User.query.filter_by(username="bug").first()
+        db.session.add(bug)
+        db.session.commit()
+        flash("Report bug success")
+        return redirect(url_for("main.report_bug"))
+    return render_template("report_bug.html", form=form)
+
+
+@main.route("/show-bugs")
+@login_required
+@admin_required
+def show_bugs():
+    ##
+    bugs = Bug.query.order_by(Bug.timestamp.desc()).all()
+    return render_template("show_bugs.html", bugs=bugs)
