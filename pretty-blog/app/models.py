@@ -59,6 +59,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64))
     image_hash = db.Column(db.String(64))
     about_me = db.Column(db.Text())##db.Text()
+    member_since = db.Column(db.DateTime, default=datetime.utcnow)
+    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     posts = db.relationship("Post", backref="author", lazy="dynamic")
     comments = db.relationship("Comment", backref="author", lazy="dynamic")
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
@@ -129,6 +131,11 @@ class User(UserMixin, db.Model):
         hash = self.image_hash or hashlib.md5(self.email.encode("utf-8")).hexdigest()
         return "{url}/{hash}?s={size}&d={default}&r={rating}".format(url=url, hash=hash, size=size, default=default, rating=rating)###
 
+    def ping(self):
+        self.last_seen = datetime.utcnow()
+        db.session.add(self)##
+        db.session.commit()
+
     @staticmethod
     def generate_fake(count=100):
         from sqlalchemy.exc import IntegrityError
@@ -146,6 +153,19 @@ class User(UserMixin, db.Model):
                 db.session.commit()
             except:
                 db.session.rollback()      ##
+
+    @staticmethod
+    def generate_fake_data():
+        from random import seed
+        import forgery_py
+        seed()
+        users = User.query.all()
+        for u in users:
+            u.member_since = forgery_py.date.date(True)
+            u.last_seen = forgery_py.date.date(True)
+            db.session.add(u)
+        db.session.commit()
+
     ####
     @property
     def followed_posts(self):

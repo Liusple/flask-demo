@@ -7,10 +7,10 @@
         <div class="profile-header">
             <h1>{{ user.username }}</h1>
 
-            <p>{% if user.location %}Location: {{ user.location }}{% endif %}</p>
+            <p>{% if user.location %}{{ user.location }}{% endif %}</p>
 
-            <p>{% if user.about_me %}Slogan: {{ user.about_me }}{% endif %}</p>
-
+            <p>{% if user.about_me %}{{ user.about_me }}{% endif %}</p>
+            <p>Member since {{ moment(user.member_since).format("L") }}. Last seen {{ moment(user.last_seen).format("L") }}.</p>
             <p>{{ user.posts.count() }} blog posts. {{ user.comments.count() }} comments.</p>
 
             <p>
