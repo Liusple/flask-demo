@@ -6,7 +6,7 @@ from .forms import LoginForm, RegisterForm, ChangePasswordForm
 from ..models import User
 from .. import db
 
-@auth.before_app_request
+@auth.before_app_request##
 def before_request():
     if current_user.is_authenticated:
         current_user.ping()

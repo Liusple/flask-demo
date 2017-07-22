@@ -27,6 +27,9 @@
                 <a href="{{ url_for("main.followed", username=user.username) }}">
                     Following:<span class="badge">{{ user.followed.count() }}</span>
                 </a>
+                {% if current_user.is_authenticated and current_user != user and user.is_following(current_user)%}
+                    |<span class="label label-default">Following you</span>
+                {% endif %}
             </p>
             <p>
                 {% if current_user.is_admin() %}

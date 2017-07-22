@@ -93,9 +93,11 @@ def post(id):
         db.session.add(comment)
         db.session.commit()
         flash("Comment success")
-        return redirect(url_for("main.post", id=post.id))##post.id
+        return redirect(url_for("main.post", id=post.id, page=-1))##post.id
     page = request.args.get("page", 1, type=int)
     #if page == -1
+    if page == -1:
+        page = (post.comments.count() - 1) // 20 + 1
     pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(page, per_page=20, error_out=False)              ##
     comments = pagination.items
     return render_template("post.html", posts=[post], comments=comments, pagination=pagination, form=form)
@@ -156,7 +158,7 @@ def followers(username):
         return redirect(url_for("main.index"))
     page = request.args.get("page", 1, type=int)
     pagination = user.followers.paginate(page, per_page=20, error_out=False)
-    follows = [item.follower for item in pagination.items]###
+    follows = [{"user":item.follower, "time":item.timestamp} for item in pagination.items]###
     return render_template("follows.html", pagination=pagination, endpoint="main.followers", follows=follows, user=user, title="Followers")
 
 
@@ -169,7 +171,7 @@ def followed(username):
     page = request.args.get("page", 1, type=int)
     #user.followed
     pagination = user.followed.paginate(page, per_page=20, error_out=False)
-    follows = [item.followed for item in pagination.items]
+    follows = [{"user":item.followed, "time":item.timestamp} for item in pagination.items]
     return render_template("follows.html", pagination=pagination, endpoint="main.followed", follows=follows, user=user, title="Following")
 
 @main.route("/all")

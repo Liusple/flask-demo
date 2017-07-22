@@ -137,6 +137,16 @@ class User(UserMixin, db.Model):
         db.session.commit()
 
     @staticmethod
+    def add_self_follow():
+        users = User.query.all()
+        for u in users:
+            if not u.is_following(u):
+                u.follow(u)
+                db.session.add(u)
+        db.session.commit()
+
+
+    @staticmethod
     def generate_fake(count=100):
         from sqlalchemy.exc import IntegrityError
         from random import seed
@@ -151,7 +161,7 @@ class User(UserMixin, db.Model):
             db.session.add(u)
             try:
                 db.session.commit()
-            except:
+            except IntegrityError:
                 db.session.rollback()      ##
 
     @staticmethod
@@ -162,7 +172,7 @@ class User(UserMixin, db.Model):
         users = User.query.all()
         for u in users:
             u.member_since = forgery_py.date.date(True)
-            u.last_seen = forgery_py.date.date(True)
+            u.last_seen = datetime.utcnow()
             db.session.add(u)
         db.session.commit()
 

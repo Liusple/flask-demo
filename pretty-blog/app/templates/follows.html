@@ -8,12 +8,16 @@
         <h1>{{ title }}</h1>
     </div>
     <table class="table table-hover followers">
-        <thead><tr><th>User</th></tr></thead>
+        <thead><tr><th>User</th><th>Since</th></tr></thead>
         {% for follow in follows %}
+            <!--follow["user"]-->
             {% if follow.user != user %}
                 <tr>
                     <td>
-                        <a href="{{ url_for("main.user", username=follow.username) }}"><img class="img-rounded" src="{{ follow.image(size=32) }}">{{ follow.username }}</a>
+                        <a href="{{ url_for("main.user", username=follow.user.username) }}"><img class="img-rounded" src="{{ follow.user.image(size=32) }}">{{ follow.user.username }}</a>
+                    </td>
+                    <td>
+                        {{ moment(follow.time).format("L") }}
                     </td>
                 </tr>
             {% endif %}
