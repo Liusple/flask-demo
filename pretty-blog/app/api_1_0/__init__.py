@@ -1,7 +1,7 @@
 # coding=utf-8
 
-from flask import Blueprints
+from flask import Blueprint
 
-api = Blueprints("api", __name__)
+api = Blueprint("api", __name__)
 
 from . import authentication, users, posts, comments, errors
